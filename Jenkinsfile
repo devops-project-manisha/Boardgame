@@ -20,13 +20,23 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
-        stage('Build image'){
+
+        stage('Build image') {
             steps {
                 sh 'docker build -t boardgame-app:latest .'
             }
         }
+
+        stage('Tag Image') {
+            steps {
+                sh """
+                docker tag boardgame-app:latest $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+                """
+            }
+        }
+
         stage('Login to ACR') {
-             steps {
+            steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'acr-creds',
                     usernameVariable: 'ACR_USER',
@@ -38,13 +48,13 @@ pipeline {
                 }
             }
         }
-        stage('push Image'){
+
+        stage('push Image') {
             steps {
                 sh """
                 docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
                 """
             }
         }
-
     }
 }
