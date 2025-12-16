@@ -60,10 +60,19 @@ pipeline {
 
         stage('Deploy using Ansible') {
             steps {
-                sh '''
-                ssh -o StrictHostKeyChecking=no jenkins@4.222.234.133 \
-                ansible-playbook /home/jenkins/Myansible/boardapp.yml -b
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'acr-creds',
+                    usernameVariable: 'ACR_USER',
+                    passwordVariable: 'ACR_PASS'
+                )]) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no jenkins@4.222.234.133 \
+                    ansible-playbook /home/jenkins/Myansible/board.yml \
+                    -e acr_username=$ACR_USER \
+                    -e acr_password=$ACR_PASS \
+                    -b
+                    '''
+                }
             }
         }
     }
