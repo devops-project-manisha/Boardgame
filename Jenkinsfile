@@ -4,6 +4,7 @@ pipeline {
     environment {
         ACR_LOGIN_SERVER = "devopsproject1.azurecr.io"
         IMAGE_NAME = "boardgame-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
@@ -35,6 +36,13 @@ pipeline {
                     echo $ACR_PASS | docker login $ACR_LOGIN_SERVER -u $ACR_USER --password-stdin
                     """
                 }
+            }
+        }
+        stage('push Image'){
+            steps {
+                sh """
+                docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+                """
             }
         }
 
