@@ -8,6 +8,11 @@ pipeline {
                     url: 'https://github.com/devops-project-manisha/Boardgame.git'
             }
         }
+        stage('build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
     }
 }
 
