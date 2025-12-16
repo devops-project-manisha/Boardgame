@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -54,6 +55,15 @@ pipeline {
                 sh """
                 docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
                 """
+            }
+        }
+
+        stage('Deploy using Ansible') {
+            steps {
+                sh '''
+                ssh -o StrictHostKeyChecking=no jenkins@4.222.234.133 \
+                ansible-playbook /home/jenkins/Myansible/boardapp.yml -b
+                '''
             }
         }
     }
