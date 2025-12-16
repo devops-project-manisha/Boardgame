@@ -3,20 +3,20 @@ pipeline {
 
     environment {
         ACR_LOGIN_SERVER = "devopsproject1.azurecr.io"
-        IMAGE_NAME = "boardgame"
-        TAG = "latest"
+        IMAGE_NAME = "boardgame-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Continuous Download') {
+        stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/palwalun/Boardgame.git'
             }
         }
 
-        stage('Continuous Build') {
+        stage('Build') {
             steps {
                 sh 'mvn clean package'
             }
@@ -25,7 +25,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh """
-                docker build -t ${IMAGE_NAME}:${TAG} .
+                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                 """
             }
         }
@@ -45,24 +45,34 @@ pipeline {
             }
         }
 
-        stage('Tag Image') {
+        stage('Tag Docker Image') {
             steps {
                 sh """
-                docker tag ${IMAGE_NAME}:${TAG} \
-                ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${TAG}
+                docker tag ${IMAGE_NAME}:${IMAGE_TAG} \
+                ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
                 """
             }
         }
 
-        stage('Push Image to ACR') {
+        stage('Tag Image as latest') {
             steps {
                 sh """
-                docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${TAG}
+                docker tag ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG} \
+                ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest
                 """
             }
         }
 
-        stage('Deploy the docker image to QA server') {
+        stage('Push Images to ACR') {
+            steps {
+                sh """
+                docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
+                docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest
+                """
+            }
+        }
+
+        stage('Deploy Docker Image to QA Server') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'acr-creds',
@@ -82,5 +92,9 @@ pipeline {
         }
     }
 
-    
+    post {
+        always {
+            sh 'docker logout devopsproject1.azurecr.io || true'
+        }
+    }
 }
