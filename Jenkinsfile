@@ -64,7 +64,7 @@ pipeline {
                 )]) {
                     sh '''
                         ssh jenkins@4.222.234.133 \
-                        ansible-playbook /home/jenkins/Myansible/boardapp.yml \
+                        ansible-playbook /home/jenkins/Myansible/board.yml \
                         -e acr_username=$ACR_USER \
                         -e acr_password=$ACR_PASS -b
                     '''
