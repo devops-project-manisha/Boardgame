@@ -9,3 +9,4 @@
             image: devopsproject1.azurecr.io/boardgame-app:latest
             ports:
               - "8082:8080"
+              
