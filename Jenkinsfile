@@ -3,30 +3,26 @@ pipeline {
 
     environment {
         ACR_LOGIN_SERVER = "devopsproject1.azurecr.io"
-        IMAGE_NAME = "boardgame-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        IMAGE_NAME = "boardgame"
+        TAG = "latest"
     }
 
     stages {
-
-        stage('Checkout') {
+        stage('Continuous Download') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/palwalun/Boardgame.git'
+                git branch: 'main', url: 'https://github.com/devops-project-manisha/Boardgame.git'
             }
         }
 
-        stage('Build') {
+        stage('Continuous Build') {
             steps {
-                sh 'mvn clean package'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                """
+                sh 'docker build -t ${IMAGE_NAME}:${TAG} .'
             }
         }
 
@@ -37,38 +33,25 @@ pipeline {
                     usernameVariable: 'ACR_USER',
                     passwordVariable: 'ACR_PASS'
                 )]) {
-                    sh """
-                    echo \$ACR_PASS | docker login ${ACR_LOGIN_SERVER} \
-                    -u \$ACR_USER --password-stdin
-                    """
+                    sh '''
+                        echo $ACR_PASS | docker login $ACR_LOGIN_SERVER -u $ACR_USER --password-stdin
+                    '''
                 }
             }
         }
 
-        stage('Tag Docker Image') {
+        stage('Tag Image') {
             steps {
-                sh """
-                docker tag ${IMAGE_NAME}:${IMAGE_TAG} \
-                ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
-                """
+                sh '''
+                    docker tag ${IMAGE_NAME}:${TAG} $ACR_LOGIN_SERVER/${IMAGE_NAME}:${TAG}
+                '''
             }
         }
 
-        stage('Tag Image as latest') {
+        stage('Push Image to ACR') {
             steps {
-                sh """
-                docker tag ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG} \
-                ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest
-                """
-            }
-        }
-
-        stage('Push Images to ACR') {
-            steps {
-                sh """
-                docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:${IMAGE_TAG}
-                docker push ${ACR_LOGIN_SERVER}/${IMAGE_NAME}:latest
-                """
+                sh 'docker push $ACR_LOGIN_SERVER/${IMAGE_NAME}:${TAG}'
+                sh 'docker logout $ACR_LOGIN_SERVER'
             }
         }
 
@@ -80,30 +63,22 @@ pipeline {
                     passwordVariable: 'ACR_PASS'
                 )]) {
                     sh '''
-                    set -e
-                    ssh -o StrictHostKeyChecking=no jenkins@4.222.234.133 \
-                    ansible-playbook /home/jenkins/Myansible/board.yml \
-                    -e acr_username=$ACR_USER \
-                    -e acr_password=$ACR_PASS \
-                    -b
+                        ssh jenkins@4.222.234.133 \
+                        ansible-playbook /home/jenkins/Myansible/boardapp.yml \
+                        -e acr_username=$ACR_USER \
+                        -e acr_password=$ACR_PASS -b
                     '''
                 }
             }
         }
 
-        
-        stage('Deploy to k8s cluster') {
+        stage('Deploy to Kubernetes Cluster') {
             steps {
                 sh '''
-                kubectl apply -f deployment.yml
+                    kubectl apply -f k8s/deployment.yml
+                    kubectl apply -f k8s/service.yml
                 '''
             }
-        }
-    }
-
-    post {
-        always {
-            sh 'docker logout devopsproject1.azurecr.io || true'
         }
     }
 }
