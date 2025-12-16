@@ -1,0 +1,11 @@
+    - name: Download customize image and deploy to server
+      hosts: all
+      become: yes
+
+      tasks:
+        - name: create container from customize image
+          docker_container:
+            name: boardgame-app
+            image: devopsproject1.azurecr.io/boardgame-app:latest
+            ports:
+              - "8082:8080"
