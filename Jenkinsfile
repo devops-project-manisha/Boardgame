@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk8'
-        maven 'Maven3'
+        jdk 'JAVA21'
+        maven 'Maven 3.9.11'
     }
 
     stages {
@@ -13,11 +13,11 @@ pipeline {
                     url: 'https://github.com/devops-project-manisha/Boardgame.git'
             }
         }
-        stage('build') {
+
+        stage('Build') {
             steps {
                 sh 'mvn clean package'
             }
         }
     }
 }
-
