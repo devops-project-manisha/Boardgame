@@ -16,7 +16,7 @@ pipeline {
         }
         stage('Build image'){
             steps {
-                sh 'docker build -t Boardgame-app:latest .'
+                sh 'docker build -t boardgame-app:latest .'
             }
         }
 
