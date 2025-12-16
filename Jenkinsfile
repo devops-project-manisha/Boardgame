@@ -14,5 +14,11 @@ pipeline {
                 sh 'mvn clean package'
             }
         }
+        stage('Build image'){
+            steps {
+                sh 'docker build -t Boardgame-app:latest .'
+            }
+        }
+
     }
 }
