@@ -1,31 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: boardgame-app
+ name: board-deployment
+ labels:
+  app: game
 spec:
-  selector:
-    matchLabels:
-      app: game
-  template:
-    metadata:
-      labels:
-        app: game
-    spec:
-      containers:
-      - name: boardgamee
-        image: devopsproject1.azurecr.io/boardgame-app:latest
-        ports:
-          - containerPort: 8080
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: boardgame-ssvc
-spec:
-  selector:
-    app: game
-  ports:
-    - targetPort: 8080    
-      port: 8081           
-  type: LoadBalancer
+ replicas: 2
+ selector:
+  matchLabels:
+   app: game
+ template:
+  metadata:
+    name: board-app
+    labels:
+     app: game
+  spec:
+    containers:
+     - name: boardapp
+       image: devopsproject1.azurecr.io/boardgame-app:latest
+       ports:
+        - containerPort: 8080
