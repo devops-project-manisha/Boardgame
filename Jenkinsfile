@@ -90,6 +90,15 @@ pipeline {
                 }
             }
         }
+
+        
+        stage('Deploy to k8s cluster') {
+            steps {
+                sh '''
+                kubectl apply -f deployment.yml
+                '''
+            }
+        }
     }
 
     post {
