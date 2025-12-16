@@ -58,7 +58,7 @@ pipeline {
             }
         }
 
-        stage('Deploy using Ansible') {
+        stage('Deploy the docker image to QA server') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'acr-creds',
