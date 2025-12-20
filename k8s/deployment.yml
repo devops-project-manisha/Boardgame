@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: boardgame-app
+spec:
+  selector:
+    matchLabels:
+      app: game
+  template:
+    metadata:
+      labels:
+        app: game
+    spec:
+      containers:
+      - name: boardgamee
+        image: devopsproject1.azurecr.io/boardgame-app:latest
+        ports:
+          - containerPort: 8080
+        resources: 
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
